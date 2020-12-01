@@ -298,7 +298,7 @@ export default {
            ...this.$refs.treeRef.getCheckedKeys(),
            ...this.$refs.treeRef.getHalfCheckedKeys()
          ]
-         const idStr = keys.join(',')
+         const idStr = keys.join()
          const {data : res} = await this.$http.post(`roles/${this.roleId}/rights`,{
            rids : idStr
          })
