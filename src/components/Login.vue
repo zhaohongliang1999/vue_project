@@ -4,7 +4,7 @@
     <div class="login_box">
         <!-- 头像 -->
       <div class="avatar_box">
-        <img src="../assets/logo.png" alt="" />
+        <img src="../assets/logo.jpg" alt="" />
       </div>
       <!-- 登录表单 -->
       <el-form ref="LoginFormRef" class="login_form" :model="loginForm "  :rules="loginFormRules">
@@ -87,7 +87,8 @@ export default {
 
 <style lang='less' scoped>
 .login_container {
-  background-color: #2b4b6b;
+  // background-color: #2b4b6b;
+  background: url(../assets/timg.jpg) top center;
   height: 100%;
 }
 
@@ -97,7 +98,8 @@ export default {
   top: 50%;
   width: 450px;
   height: 300px;
-  background-color: #fff;
+  background-color: #fedbe1;
+  opacity: 0.9;
   border-radius: 3px;
   transform: translate(-50%, -50%);
   .avatar_box {

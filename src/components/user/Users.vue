@@ -292,7 +292,6 @@ export default {
       this.$message.success('删除用户成功')
        console.log(this.userlist.length);
       if (this.userlist.length === 1) {
-    
         this.queryInfo.pagenum = this.queryInfo.pagenum > 1 ? this.queryInfo.pagenum - 1 : 1
       }
       this.getUserList()

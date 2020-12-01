@@ -16,6 +16,15 @@ axios.interceptors.request.use((config) => {
   config.headers.Authorization = window.sessionStorage.getItem('token');
   return config;
 });
+// 无效token的处理
+axios.interceptors.response.use(res => {
+  // 当提示信息为无效的token或者状态为400
+  if (res.data.meta.msg === '无效的token' && res.data.meta.status === 400) {
+    // 跳转到登录页面
+    localStorage.href = '/#/login'
+  }
+  return res
+})
 Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
