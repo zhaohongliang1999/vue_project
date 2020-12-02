@@ -312,6 +312,7 @@ export default {
       if (confirmResult !== "confirm") {
         return this.$message.info("已取消删除");
       }
+      // 删除业务逻辑
       const {data : res} = await this.$http.delete(`categories/${this.cateId}/attributes/${attrId}`)
       if (res.meta.status !== 200) {
           return this.$message.error('删除参数失败')
