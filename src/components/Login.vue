@@ -33,7 +33,7 @@ export default {
     return {
       // 登录表单的数据绑定对象
       loginForm : {
-        username : '田志成',
+        username : 'admin',
         password : '123456'
       },
         //表单验证规则
