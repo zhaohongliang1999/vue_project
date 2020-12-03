@@ -25,10 +25,19 @@ body,
 .el-pagination {
   margin-top: 15px;
 }
+/* 解决 cascader Bug */
 .el-cascader-menu{
   height: 300px;
 }
 
 .el-scrollbar_wrap {
   overflow: hidden;
+}
+
+.el-steps {
+  margin: 15px 0;
+}
+
+.el-step__title{
+  font-size: 13px;
 }
