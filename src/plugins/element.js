@@ -2,8 +2,7 @@ import Vue from 'vue'
 import { Button,Form,FormItem,Input,Message, Container,Header,Aside,Main,Menu,Submenu,MenuItem,
     MenuItemGroup, Breadcrumb, BreadcrumbItem, Card, Row, Col,Table,TableColumn,Switch,
     Tooltip,Pagination, Dialog, MessageBox,Tag,Tree ,Select, Option,Cascader,
-    Alert,Tbs, Tabs,TabPane,Steps,Step,CheckboxGroup,Checkbox} from 'element-ui'
-
+    Alert,Tbs, Tabs,TabPane,Steps,Step,CheckboxGroup,Checkbox,Upload,Timeline,TimelineItem} from 'element-ui'
 Vue.use(Button)
 Vue.use(Form)
 Vue.use(FormItem)
@@ -39,6 +38,9 @@ Vue.use(Steps)
 Vue.use(Step)
 Vue.use(CheckboxGroup)
 Vue.use(Checkbox)
+Vue.use(Upload)
+Vue.use(Timeline)
+Vue.use(TimelineItem)
 // 进行全局挂载：
 // 把弹框组件挂着到了 vue 的原型对象上，这样每一个组件都可以直接通过 this 访问
 Vue.prototype.$message = Message;

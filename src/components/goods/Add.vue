@@ -84,19 +84,45 @@
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="商品属性" name="2">
-              <el-form-item :label="item.attr_name" v-for="item in onlyTableData" :key="item.attr_id">
-                  <el-input v-model="item.attr_vals"></el-input>
-              </el-form-item>
+            <el-form-item
+              :label="item.attr_name"
+              v-for="item in onlyTableData"
+              :key="item.attr_id"
+            >
+              <el-input v-model="item.attr_vals"></el-input>
+            </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
-          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+          <el-tab-pane label="商品图片" name="3">
+            <!-- action 表示图片要上传到的后台API地址 -->
+            <el-upload
+              :action="uploadURL"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              list-type="picture"
+              :headers="headerObj"
+              :on-success="handleSuccess"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+            </el-upload>
+          </el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <quill-editor v-model="addForm.goods_introduce"></quill-editor>
+            <el-button type="primary" class="btn-add" @click="add"
+              >添加商品</el-button
+            >
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
+    <!-- 图片预览区域 -->
+    <el-dialog title="图片预览" :visible.sync="previewVisible" width="50%">
+      <img :src="previewPath" alt="" class="previewImg" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
+ import _ from 'lodash'
 export default {
   data() {
     return {
@@ -111,9 +137,12 @@ export default {
         goods_weight: 0,
         goods_number: 0,
         // 商品所属的分类数组
-        goods_cat: [
-          { required: true, message: "请选择商品分类", trigger: "blur" },
-        ],
+        goods_cat: [],
+        //图片的数组
+        pics: [],
+        // 商品的详情描述
+        goods_introduce: "",
+        attrs: [],
       },
       // 表单校验规则
       addFormRules: {
@@ -140,9 +169,19 @@ export default {
         expandTrigger: "hover",
       },
       // 动态参数列表的数据
-      manyTableData : [],
+      manyTableData: [],
       // 静态属性列表的数据
-      onlyTableData : []
+      onlyTableData: [],
+      // 上传图片的URL地址
+      uploadURL: "http://127.0.0.1:8888/api/private/v1/upload",
+      // 图片上传组件的headers请求头对象
+      headerObj: {
+        Authorization: window.sessionStorage.getItem("token"),
+      },
+      //保存临时路径的地址
+      previewPath: "",
+      // 控制预览框的状态
+      previewVisible: false,
     };
   },
   created() {
@@ -170,47 +209,114 @@ export default {
       }
     },
     async tabClicked() {
-        // 证明访问的是动态参数面板
-        if (this.activeIndex === '1') {
-            // 动态参数
-            const {data : res} = await this.$http.get(`categories/${this.cateId}/attributes`,{
-                params : {
-                    sel : 'many'
-                }
-            })
-            if (res.meta.status !== 200) {
-                return this.$message.error('获取动态参数列表失败')
-            }
-            res.data.forEach(item => {
-                  item.attr_vals = item.attr_vals.length === 0 ? [] : item.attr_vals.split(' ')
-            })
-            this.manyTableData = res.data
-        } else if (this.activeIndex === '2') {
-        const {data : res} =  await this.$http.get(`categories/${this.cateId}/attributes`,{
-                params : {sel : 'only'}
-            })
-            if (res.meta.status !==200) {
-                return this.$message.error('获取静态属性失败!')
-            }
-            console.log(res.data);
-            this.onlyTableData = res.data
-        }
-    }
-  },
-  computed : {
-      cateId() {
-          // 三级分类的 ID
-          if (this.addForm.goods_cat.length === 3) {
-              return this.addForm.goods_cat[2]
+      // 证明访问的是动态参数面板
+      if (this.activeIndex === "1") {
+        // 动态参数
+        const { data: res } = await this.$http.get(
+          `categories/${this.cateId}/attributes`,
+          {
+            params: {
+              sel: "many",
+            },
           }
-          return null
+        );
+        if (res.meta.status !== 200) {
+          return this.$message.error("获取动态参数列表失败");
+        }
+        res.data.forEach((item) => {
+          item.attr_vals =
+            item.attr_vals.length === 0 ? [] : item.attr_vals.split(" ");
+        });
+        this.manyTableData = res.data;
+      } else if (this.activeIndex === "2") {
+        const { data: res } = await this.$http.get(
+          `categories/${this.cateId}/attributes`,
+          {
+            params: { sel: "only" },
+          }
+        );
+        if (res.meta.status !== 200) {
+          return this.$message.error("获取静态属性失败!");
+        }
+        console.log(res.data);
+        this.onlyTableData = res.data;
       }
-  }
+    },
+    //处理图片预览效果
+    handlePreview(file) {
+      this.previewPath = file.response.data.url;
+      this.previewVisible = true;
+    },
+    //处理移除图片的操作
+    handleRemove(file) {
+      // 获取将要删除的图片的临时路径
+      const filePath = file.response.data.tmp_path;
+      // 从 pics 数组中，找到这个图片对应的索引值
+      const i = this.addForm.pics.findIndex((x) => x.pic === filePath);
+      // 调用数组的 splice 方法，把图片信息对象从 pics 数组中移出
+      this.addForm.pics.splice(i, 1);
+    },
+    //图片上传成功
+    handleSuccess(response) {
+      //拼接得到的图片信息对象
+      const picInfo = {
+        pic: response.data.tmp_path,
+      };
+      this.addForm.pics.push(picInfo);
+    },
+    add() {
+      this.$refs.addFormRef.validate(async (valid) => {
+        if (!valid) {
+          return this.$message.error("请填写必要的表单项");
+        }
+        // 执行添加的业务逻辑
+        // 深拷贝，防止影响原来的 goods_cat，视图中的 goods_cat 需要的还是数组
+        const form = _.cloneDeep(this.addForm);
+        form.goods_cat = form.goods_cat.join(",");
+        this.manyTableData.forEach((item) => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals.join(" "),
+          };
+          this.addForm.attrs.push(newInfo);
+        });
+        this.onlyTableData.forEach((item) => {
+          const newInfo = {
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals,
+          };
+          this.addForm.attrs.push(newInfo);
+        });
+        form.attrs = this.addForm.attrs;
+        console.log(form)
+        // 发起请求添加商品
+        const { data: res } = await this.$http.post("goods", form);
+        if (res.meta.status !== 201) {
+          return this.$message.error("添加商品失败");
+        }
+        this.$message.success("添加商品成功");
+        this.$router.push("/goods");
+      });
+    },
+  },
+  computed: {
+    cateId() {
+      // 三级分类的 ID
+      if (this.addForm.goods_cat.length === 3) {
+        return this.addForm.goods_cat[2];
+      }
+      return null;
+    },
+  },
 };
 </script>
 
 <style lang="less" scoped>
- .el-checkbox {
-     margin: 0 10px 0 0!important;
- }
+.el-checkbox {
+  margin: 0 10px 0 0 !important;
+}
+
+.previewImg {
+  width: 100%;
+}
 </style>
